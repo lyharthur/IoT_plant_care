@@ -18,9 +18,7 @@ char auth[] = "69ce88af6d0540728746cf4b9809357a";
 dht DHT;
 SimpleTimer timer;
 
-// This function sends Arduino's up time every second to Virtual Pin (5).
-// In the app, Widget's reading frequency should be set to PUSH. This means
-// that you define how often to send data to Blynk App.
+
 void sendSensor()
 {
   float h = DHT.humidity;
@@ -58,6 +56,7 @@ void loop()
 {
   Blynk.run(); // Initiates Blynk
   timer.run(); // Initiates SimpleTimer
+  
 }
 
 
