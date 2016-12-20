@@ -4,6 +4,7 @@
 
 #include <dht.h>
 #include <BlynkSimpleYun.h>
+#include <Bridge.h>
 #include <SimpleTimer.h>
 
 
@@ -22,14 +23,19 @@ SimpleTimer timer;
 void sendSensor()
 {
   float h = DHT.humidity;
-  float t = DHT.temperature; 
+  float t = DHT.temperature;
+  float w = analogRead(A1)/10;
+   
   DHT.read11(DHTPIN);
   Serial.print("Current humidity = "); 
   Serial.print(h); 
   Serial.print("% "); 
   Serial.print("temperature = ");
   Serial.print(t); 
-  Serial.println("C ");
+  Serial.println("°C ");
+   Serial.print("Moisture Sensor Value = ");
+  Serial.print(w); 
+  Serial.println("% ");  
 
   if (isnan(h) || isnan(t)) {
     Serial.println("Failed to read from DHT sensor!");
@@ -37,6 +43,7 @@ void sendSensor()
   }
   // You can send any value at any time.
   // Please don't send more that 10 values per second.
+  Blynk.virtualWrite(V5,w);
   Blynk.virtualWrite(V5, h);
   Blynk.virtualWrite(V6, t);
 }
