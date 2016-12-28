@@ -4,6 +4,7 @@
 #include <Bridge.h>
 #include <BlynkSimpleYun.h>
 #include <SimpleTimer.h>
+#include <Servo.h>
 
 
 char auth[] = "69ce88af6d0540728746cf4b9809357a";
@@ -15,9 +16,11 @@ char auth[] = "69ce88af6d0540728746cf4b9809357a";
 
 dht DHT;
 SimpleTimer timer;
+Servo myservo;  
 
 int waterValue;
 float t,w,h;
+int pos = 0; 
 
 void sendSensor()
 {
@@ -48,8 +51,8 @@ void sendSensor()
 
 void plantMood(){
   int range_1,range_2;
-  range_1 = waterValue + 10;
-  range_2 = waterValue - 10;
+  range_1 = waterValue + 15;
+  range_2 = waterValue - 15;
 
   if( w <= range_1 && w >= range_2){
     analogWrite(redPin, 255);
@@ -66,23 +69,33 @@ void plantMood(){
     analogWrite(greenPin, 255);
     analogWrite(bluePin, 255);
   }
-  
 }
 
 void checkWater(){
-  Serial.print(" Slider Water Value is: ");
-  Serial.println(waterValue);
+  
+  w = analogRead(A1)/10;
+  if(w < waterValue - 10){// need water . Open
+    myservo.write(1);     
+  }
+   if(w >= waterValue){// don't need water. Close
+
+    myservo.write(179);     
+  }
+  
 }
 
 BLYNK_WRITE(V3)
 {
-  waterValue = param.asInt(); // assigning incoming value from pin V1 to a variable
-  checkWater();
+  waterValue = param.asInt(); 
+  Serial.print(" Slider Water Value is: ");
+  Serial.println(waterValue);
   plantMood();
+  checkWater();
 }
 
 void setup()
 {
+  myservo.attach(9); 
   Serial.begin(9600); // See the connection status in Serial Monitor
   Blynk.begin(auth);
   BLYNK_WRITE(V3);
@@ -90,15 +103,16 @@ void setup()
   pinMode(greenPin, OUTPUT);
   pinMode(bluePin, OUTPUT);
   // Setup a function to be called every second
-  timer.setInterval(10000L, sendSensor);
-  timer.setInterval(5000L, plantMood);
+  timer.setInterval(1000L, sendSensor);
+  timer.setInterval(500L, plantMood);
+  timer.setInterval(500L, checkWater);
+  
 }
 
 void loop()
 {
-
-
-  Blynk.run(); // Initiates Blynk
-  timer.run(); // Initiates SimpleTimer
   
+  Blynk.run(); // Initiates Blynk
+  
+  timer.run(); // Initiates SimpleTimer
 }
